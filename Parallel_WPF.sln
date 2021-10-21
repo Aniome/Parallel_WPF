@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31729.503
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parallel_WPF", "Parallel_WPF\Parallel_WPF.csproj", "{DADB37B6-B445-4089-B9E5-6B57CA579D7C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DADB37B6-B445-4089-B9E5-6B57CA579D7C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DADB37B6-B445-4089-B9E5-6B57CA579D7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DADB37B6-B445-4089-B9E5-6B57CA579D7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DADB37B6-B445-4089-B9E5-6B57CA579D7C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {89E2EB28-FE90-48DF-8C80-1CFCF098C440}
+	EndGlobalSection
+EndGlobal
