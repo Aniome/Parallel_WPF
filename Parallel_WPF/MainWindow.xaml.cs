@@ -27,17 +27,17 @@ namespace Parallel_WPF
         {
             InitializeComponent();
         }
-        private void setProgressBarOneThread(ulong value)
+        private void setProgressBarOneThread()
         {
             Dispatcher.Invoke(() => {
-                ProgressBarOneThread.Value = value;
+                ProgressBarOneThread.Value += 25;
             });
         }
-        private void setProgressBarMultiThread(ulong value, ulong res)
+        private void setProgressBarMultiThread(ulong res)
         {
             sum += res;
             Dispatcher.Invoke(() => {
-                ProgressBarMultiThread.Value = value;
+                ProgressBarMultiThread.Value += 25;
             });
         }
         private void Off_On_Buttons(bool one, bool multi)
@@ -48,16 +48,15 @@ namespace Parallel_WPF
         private void oneThread()
         {
             ulong res = 0;
-            ulong max = 999999999;
-            for (ulong i = 1; i <= max; i++)
+            ulong max = 1000000001;
+            ulong[] values = { 250000000, 500000000, 750000000 };
+            for (ulong i = 1; i < max; i++)
             {
                 res += i;
-                if (i == 333333333)
-                    setProgressBarOneThread(33);
-                if (i == 666666666)
-                    setProgressBarOneThread(66);
+                if (i.Equals(values[0]) || i.Equals(values[1]) || i.Equals(values[2]))
+                    setProgressBarOneThread();
             }
-            setProgressBarOneThread(100);
+            setProgressBarOneThread();
             double time = (DateTime.Now - start).Ticks * 1e-7;
             Dispatcher.Invoke(() => {
                 txtblock.Text = "Время: " + time.ToString() + " с";
@@ -67,15 +66,22 @@ namespace Parallel_WPF
         }
         private void multiThread()
         {
-            Thread thread1 = new Thread(first_part);
-            Thread thread2 = new Thread(second_part);
-            Thread thread3 = new Thread(third_part);
-            thread1.Start();
-            thread2.Start();
-            thread3.Start();
+            Start_End se1 = new Start_End(0, 250000000);
+            Thread thread1 = new Thread(new ParameterizedThreadStart(SumInThreads));
+            Start_End se2 = new Start_End(250000000, 500000000);
+            Thread thread2 = new Thread(new ParameterizedThreadStart(SumInThreads));
+            Start_End se3 = new Start_End(500000000, 750000000);
+            Thread thread3 = new Thread(new ParameterizedThreadStart(SumInThreads));
+            Start_End se4 = new Start_End(750000000, 1000000001);
+            Thread thread4 = new Thread(new ParameterizedThreadStart(SumInThreads));
+            thread1.Start(se1);
+            thread2.Start(se2);
+            thread3.Start(se3);
+            thread4.Start(se4);
             thread1.Join();
             thread2.Join();
             thread3.Join();
+            thread4.Join();
             double time = (DateTime.Now - start).Ticks * 1e-7;
             Dispatcher.Invoke(() => {
                 txtblock_multi.Text = "Время: " + time.ToString() + " с";
@@ -84,92 +90,43 @@ namespace Parallel_WPF
             });
             sum = 0;
         }
-        private void first_part()
-        {
-            ulong res = 0;
-            for (ulong i = 0; i < 333333333; i++)
-                res += i;
-            setProgressBarMultiThread(33, res);
-        }
-        private void second_part()
-        {
-            ulong res = 0;
-            for (ulong i = 333333333; i < 666666666; i++)
-                res += i;
-            setProgressBarMultiThread(66, res);
-        }
-        private void third_part()
-        {
-            ulong res = 0;
-            for (ulong i = 666666666; i <= 999999999; i++)
-                res += i;
-            setProgressBarMultiThread(100, res);
-        }
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            Off_On_Buttons(false, false);
-            start = DateTime.Now;
+            StartThread(ProgressBarOneThread);
             Thread thread = new Thread(oneThread);
             thread.Start();
         }
-
         private void button_multi_Click(object sender, RoutedEventArgs e)
         {
-            Off_On_Buttons(false, false);
-            start = DateTime.Now;
+            StartThread(ProgressBarMultiThread);
             Thread thread = new Thread(multiThread);
             thread.Start();
         }
+        private void SumInThreads(object o)
+        {
+            Start_End se = (Start_End)o;
+            ulong res = 0;
+            for (ulong i = se.start; i < se.end; i++)
+                res += i;
 
+
+            setProgressBarMultiThread(res);
+        }
+        private class Start_End
+        {
+            public Start_End(ulong s, ulong e) 
+            {
+                start = s;
+                end = e;
+            }
+            public ulong start { get; }
+            public ulong end { get; }
+        }
+        private void StartThread(ProgressBar pb)
+        {
+            pb.Value = 0;
+            Off_On_Buttons(false, false);
+            start = DateTime.Now;
+        }
     }
 }
-/*
-              ulong size = 100000000;
-            ulong[] arr = new ulong[size];
-            FillArray(arr);
-            qsortConsistent(arr, 0, size - 1);
-            double time = (DateTime.Now - start).Ticks * 1e-7;
-            Dispatcher.Invoke(() => {
-                txtblock.Text = "Время: "+time.ToString()+"с";
-                button.IsEnabled = true;
-            });
-            size = 0;
-            arr = null;
-            System.GC.Collect();
-          void FillArray(ulong[] arr)
-        {
-            Random rnd = new Random();
-            for (int i = 0; i < arr.Length; i++)
-                arr[i] = (ulong)rnd.Next(100);
-        }
-        void qsortConsistent(ulong[] arr, ulong first, ulong last)
-        {
-            if (first < last)
-            {
-                ulong left = first;
-                ulong right = last;
-                ulong middle = arr[(left + right) / 2];
-                do
-                {
-                    while (arr[left] < middle)
-                        left++;
-                    while (arr[right] > middle)
-                        right--;
-                    if (left <= right)
-                    {
-                        swap(ref arr[left], ref arr[right]);
-                        left++;
-                        right--;
-                    }
-                } while (left <= right);
-                qsortConsistent(arr, first, right);
-                qsortConsistent(arr, left, last);
-            }
-        }
-        void swap(ref ulong a, ref ulong b)
-        {
-            ulong t = a;
-            a = b;
-            b = t;
-        }
- */
