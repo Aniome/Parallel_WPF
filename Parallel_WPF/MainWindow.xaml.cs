@@ -21,12 +21,106 @@ namespace Parallel_WPF
     /// </summary>
     public partial class MainWindow : Window
     {
-        bool busy = false;
+        DateTime start;
+        ulong sum =0;
         public MainWindow()
         {
             InitializeComponent();
         }
-        void FillArray(ulong[] arr)
+        private void oneThread()
+        {
+            ulong res = 0;
+            ulong max = 999999999;
+            for (ulong i = 1; i <= max; i++)
+                res += i;
+            double time = (DateTime.Now - start).Ticks * 1e-7;
+            Dispatcher.Invoke(() => {
+                txtblock.Text = "Время: " + time.ToString() + " с";
+                Result.Text = "Результат: " + res.ToString();
+                button.IsEnabled = true;
+                button_multi.IsEnabled = true;
+            });
+        }
+        private void multiThread()
+        {
+            Thread thread1 = new Thread(first_part);
+            Thread thread2 = new Thread(second_part);
+            Thread thread3 = new Thread(third_part);
+            thread1.Start();
+            thread2.Start();
+            thread3.Start();
+            thread1.Join();
+            thread2.Join();
+            thread3.Join();
+            double time = (DateTime.Now - start).Ticks * 1e-7;
+            Dispatcher.Invoke(() => {
+                txtblock_multi.Text = "Время: " + time.ToString() + " с";
+                Result_multi.Text = "Результат: " + sum.ToString();
+                button_multi.IsEnabled = true;
+                button.IsEnabled = true;
+            });
+        }
+        private void first_part()
+        {
+            ulong res = 0;
+            for (ulong i = 0; i < 333333333; i++)
+                res += i;
+            Dispatcher.Invoke(() => {
+                sum += res;
+            });
+        }
+        private void second_part()
+        {
+            ulong res = 0;
+            for (ulong i = 333333333; i < 666666666; i++)
+                res += i;
+            Dispatcher.Invoke(() => {
+                sum += res;
+            });
+        }
+        private void third_part()
+        {
+            ulong res = 0;
+            for (ulong i = 666666666; i <= 999999999; i++)
+                res += i;
+            Dispatcher.Invoke(() => {
+                sum += res;
+            });
+        }
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            button.IsEnabled = false;
+            button_multi.IsEnabled = false;
+            start = DateTime.Now;
+            Thread thread = new Thread(oneThread);
+            thread.Start();
+        }
+
+        private void button_multi_Click(object sender, RoutedEventArgs e)
+        {
+            button_multi.IsEnabled = false;
+            button.IsEnabled = false;
+            start = DateTime.Now;
+            Thread thread = new Thread(multiThread);
+            thread.Start();
+        }
+
+    }
+}
+/*
+              ulong size = 100000000;
+            ulong[] arr = new ulong[size];
+            FillArray(arr);
+            qsortConsistent(arr, 0, size - 1);
+            double time = (DateTime.Now - start).Ticks * 1e-7;
+            Dispatcher.Invoke(() => {
+                txtblock.Text = "Время: "+time.ToString()+"с";
+                button.IsEnabled = true;
+            });
+            size = 0;
+            arr = null;
+            System.GC.Collect();
+          void FillArray(ulong[] arr)
         {
             Random rnd = new Random();
             for (int i = 0; i < arr.Length; i++)
@@ -62,25 +156,4 @@ namespace Parallel_WPF
             a = b;
             b = t;
         }
-        private void oneThread()
-        {
-            busy = true;
-            ulong size = 10000000;
-            ulong[] arr = new ulong[size];
-            FillArray(arr);
-            qsortConsistent(arr, 0, size - 1);
-            this.Dispatcher.Invoke(()=> {
-                txtbox.Text = "Hey";
-            });
-            busy = false;
-        }
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            if (!busy)
-            {
-                Thread thread = new Thread(oneThread);
-                thread.Start();
-            }
-        }
-    }
-}
+ */
