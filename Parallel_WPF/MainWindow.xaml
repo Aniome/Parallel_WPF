@@ -5,13 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Parallel_WPF"
         mc:Ignorable="d"
-        Title="QuickSort" Height="234" Width="375.333">
-    <Grid x:Name="grid1">
+        Title="Сумма ряда" Height="234" Width="375.333">
+    <Grid>
         <GroupBox Header="Один поток" HorizontalAlignment="Left" Height="87" Margin="10,10,0,0" VerticalAlignment="Top" Width="337">
             <Grid>
                 <Button x:Name="button" Content="Старт" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
                 <TextBlock x:Name="txtblock" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="125,40,0,0" Text="Время: "/>
-                <ProgressBar HorizontalAlignment="Left" Height="10" Margin="10,43,0,0" VerticalAlignment="Top" Width="100"/>
+                <ProgressBar HorizontalAlignment="Left" Height="10" Margin="10,43,0,0" VerticalAlignment="Top" Width="100" x:Name="ProgressBarOneThread"/>
                 <TextBlock x:Name="Result" HorizontalAlignment="Left" Margin="90,12,0,0" TextWrapping="Wrap" Text="Результат:" VerticalAlignment="Top"/>
             </Grid>
         </GroupBox>
@@ -19,7 +19,7 @@
             <Grid>
                 <Button x:Name="button_multi" Content="Старт" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75" Click="button_multi_Click" />
                 <TextBlock x:Name="txtblock_multi" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="115,40,0,0" Text="Время"/>
-                <ProgressBar HorizontalAlignment="Left" Height="10" Margin="10,43,0,0" VerticalAlignment="Top" Width="100"/>
+                <ProgressBar HorizontalAlignment="Left" Height="10" Margin="10,43,0,0" VerticalAlignment="Top" Width="100" x:Name="ProgressBarMultiThread"/>
                 <TextBlock x:Name="Result_multi" HorizontalAlignment="Left" Margin="95,11,0,0" TextWrapping="Wrap" Text="Результат:" VerticalAlignment="Top"/>
             </Grid>
         </GroupBox>

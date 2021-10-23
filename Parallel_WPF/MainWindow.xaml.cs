@@ -22,23 +22,47 @@ namespace Parallel_WPF
     public partial class MainWindow : Window
     {
         DateTime start;
-        ulong sum =0;
+        ulong sum = 0;
         public MainWindow()
         {
             InitializeComponent();
+        }
+        private void setProgressBarOneThread(ulong value)
+        {
+            Dispatcher.Invoke(() => {
+                ProgressBarOneThread.Value = value;
+            });
+        }
+        private void setProgressBarMultiThread(ulong value, ulong res)
+        {
+            sum += res;
+            Dispatcher.Invoke(() => {
+                ProgressBarMultiThread.Value = value;
+            });
+        }
+        private void Off_On_Buttons(bool one, bool multi)
+        {
+            button.IsEnabled = one;
+            button_multi.IsEnabled = multi;
         }
         private void oneThread()
         {
             ulong res = 0;
             ulong max = 999999999;
             for (ulong i = 1; i <= max; i++)
+            {
                 res += i;
+                if (i == 333333333)
+                    setProgressBarOneThread(33);
+                if (i == 666666666)
+                    setProgressBarOneThread(66);
+            }
+            setProgressBarOneThread(100);
             double time = (DateTime.Now - start).Ticks * 1e-7;
             Dispatcher.Invoke(() => {
                 txtblock.Text = "Время: " + time.ToString() + " с";
                 Result.Text = "Результат: " + res.ToString();
-                button.IsEnabled = true;
-                button_multi.IsEnabled = true;
+                Off_On_Buttons(true, true);
             });
         }
         private void multiThread()
@@ -56,41 +80,34 @@ namespace Parallel_WPF
             Dispatcher.Invoke(() => {
                 txtblock_multi.Text = "Время: " + time.ToString() + " с";
                 Result_multi.Text = "Результат: " + sum.ToString();
-                button_multi.IsEnabled = true;
-                button.IsEnabled = true;
+                Off_On_Buttons(true, true);
             });
+            sum = 0;
         }
         private void first_part()
         {
             ulong res = 0;
             for (ulong i = 0; i < 333333333; i++)
                 res += i;
-            Dispatcher.Invoke(() => {
-                sum += res;
-            });
+            setProgressBarMultiThread(33, res);
         }
         private void second_part()
         {
             ulong res = 0;
             for (ulong i = 333333333; i < 666666666; i++)
                 res += i;
-            Dispatcher.Invoke(() => {
-                sum += res;
-            });
+            setProgressBarMultiThread(66, res);
         }
         private void third_part()
         {
             ulong res = 0;
             for (ulong i = 666666666; i <= 999999999; i++)
                 res += i;
-            Dispatcher.Invoke(() => {
-                sum += res;
-            });
+            setProgressBarMultiThread(100, res);
         }
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            button.IsEnabled = false;
-            button_multi.IsEnabled = false;
+            Off_On_Buttons(false, false);
             start = DateTime.Now;
             Thread thread = new Thread(oneThread);
             thread.Start();
@@ -98,8 +115,7 @@ namespace Parallel_WPF
 
         private void button_multi_Click(object sender, RoutedEventArgs e)
         {
-            button_multi.IsEnabled = false;
-            button.IsEnabled = false;
+            Off_On_Buttons(false, false);
             start = DateTime.Now;
             Thread thread = new Thread(multiThread);
             thread.Start();
