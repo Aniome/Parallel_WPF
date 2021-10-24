@@ -21,23 +21,25 @@ namespace Parallel_WPF
     /// </summary>
     public partial class MainWindow : Window
     {
-        DateTime start;
+        DateTime start_time;
         ulong sum = 0;
         public MainWindow()
         {
             InitializeComponent();
         }
-        private void setProgressBarOneThread()
+        private void setProgressBar(ProgressBar pb)
         {
             Dispatcher.Invoke(() => {
-                ProgressBarOneThread.Value += 25;
+                pb.Value += 25;
             });
         }
-        private void setProgressBarMultiThread(ulong res)
+        private void PrintResults(TextBlock textBlock, TextBlock result, ulong res)
         {
-            sum += res;
+            double time = (DateTime.Now - start_time).Ticks * 1e-7;
             Dispatcher.Invoke(() => {
-                ProgressBarMultiThread.Value += 25;
+                textBlock.Text = "Время: " + time.ToString() + " с";
+                result.Text = "Результат: " + res.ToString();
+                Off_On_Buttons(true, true);
             });
         }
         private void Off_On_Buttons(bool one, bool multi)
@@ -47,60 +49,47 @@ namespace Parallel_WPF
         }
         private void oneThread()
         {
-            ulong res = 0;
             ulong max = 1000000001;
             ulong[] values = { 250000000, 500000000, 750000000 };
             for (ulong i = 1; i < max; i++)
             {
-                res += i;
+                sum += i;
                 if (i.Equals(values[0]) || i.Equals(values[1]) || i.Equals(values[2]))
-                    setProgressBarOneThread();
+                    setProgressBar(ProgressBarOneThread);
             }
-            setProgressBarOneThread();
-            double time = (DateTime.Now - start).Ticks * 1e-7;
-            Dispatcher.Invoke(() => {
-                txtblock.Text = "Время: " + time.ToString() + " с";
-                Result.Text = "Результат: " + res.ToString();
-                Off_On_Buttons(true, true);
-            });
+            setProgressBar(ProgressBarOneThread);
+            PrintResults(txtblock,Result,sum);
+            sum = 0;
         }
         private void multiThread()
         {
-            Start_End se1 = new Start_End(0, 250000000);
-            Thread thread1 = new Thread(new ParameterizedThreadStart(SumInThreads));
-            Start_End se2 = new Start_End(250000000, 500000000);
-            Thread thread2 = new Thread(new ParameterizedThreadStart(SumInThreads));
-            Start_End se3 = new Start_End(500000000, 750000000);
-            Thread thread3 = new Thread(new ParameterizedThreadStart(SumInThreads));
-            Start_End se4 = new Start_End(750000000, 1000000001);
-            Thread thread4 = new Thread(new ParameterizedThreadStart(SumInThreads));
-            thread1.Start(se1);
-            thread2.Start(se2);
-            thread3.Start(se3);
-            thread4.Start(se4);
-            thread1.Join();
-            thread2.Join();
-            thread3.Join();
-            thread4.Join();
-            double time = (DateTime.Now - start).Ticks * 1e-7;
-            Dispatcher.Invoke(() => {
-                txtblock_multi.Text = "Время: " + time.ToString() + " с";
-                Result_multi.Text = "Результат: " + sum.ToString();
-                Off_On_Buttons(true, true);
-            });
+            Start_End[] start_Ends = new Start_End[4];
+            ulong start = 0;
+            ulong end = 250000001;
+            for (byte i = 0; i < start_Ends.Length; i++)
+            {
+                start_Ends[i] = new Start_End(start, end);
+                start = end;
+                end += 250000000;
+            }
+            Thread[] threads = new Thread[4];
+            for (byte i = 0; i < threads.Length; i++)
+            {
+                threads[i] = new Thread(new ParameterizedThreadStart(SumInThreads));
+                threads[i].Start(start_Ends[i]);
+            }
+            for (byte i = 0; i < threads.Length; i++)
+                threads[i].Join();
+            PrintResults(txtblock_multi,Result_multi,sum);
             sum = 0;
         }
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            StartThread(ProgressBarOneThread);
-            Thread thread = new Thread(oneThread);
-            thread.Start();
+            StartThread(ProgressBarOneThread, oneThread);
         }
         private void button_multi_Click(object sender, RoutedEventArgs e)
         {
-            StartThread(ProgressBarMultiThread);
-            Thread thread = new Thread(multiThread);
-            thread.Start();
+            StartThread(ProgressBarMultiThread, multiThread);
         }
         private void SumInThreads(object o)
         {
@@ -108,13 +97,12 @@ namespace Parallel_WPF
             ulong res = 0;
             for (ulong i = se.start; i < se.end; i++)
                 res += i;
-
-
-            setProgressBarMultiThread(res);
+            sum += res;
+            setProgressBar(ProgressBarMultiThread);
         }
         private class Start_End
         {
-            public Start_End(ulong s, ulong e) 
+            public Start_End(ulong s, ulong e)
             {
                 start = s;
                 end = e;
@@ -122,11 +110,13 @@ namespace Parallel_WPF
             public ulong start { get; }
             public ulong end { get; }
         }
-        private void StartThread(ProgressBar pb)
+        private void StartThread(ProgressBar pb, ThreadStart threadStart)
         {
             pb.Value = 0;
             Off_On_Buttons(false, false);
-            start = DateTime.Now;
+            start_time = DateTime.Now;
+            Thread thread = new Thread(threadStart);
+            thread.Start();
         }
     }
 }
