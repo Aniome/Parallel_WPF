@@ -50,7 +50,7 @@ namespace Parallel_WPF
         private void oneThread()
         {
             ulong max = 1000000001;
-            for (ulong i = 1; i < max; i++)
+            for (ulong i = 0; i < max; i++)
             {
                 sum += i;
                 if (i == 250000000 || i == 500000000 || i == 750000000)
