@@ -33,12 +33,12 @@ namespace Parallel_WPF
                 pb.Value += 25;
             });
         }
-        private void PrintResults(TextBlock textBlock, TextBlock result, ulong res)
+        private void PrintResults(TextBlock textBlock, TextBlock result)
         {
             double time = (DateTime.Now - start_time).Ticks * 1e-7;
             Dispatcher.Invoke(() => {
                 textBlock.Text = "Время: " + time.ToString() + " с";
-                result.Text = "Результат: " + res.ToString();
+                result.Text = "Результат: " + sum.ToString();
                 Off_On_Buttons(true, true);
             });
         }
@@ -50,15 +50,14 @@ namespace Parallel_WPF
         private void oneThread()
         {
             ulong max = 1000000001;
-            ulong[] values = { 250000000, 500000000, 750000000 };
             for (ulong i = 1; i < max; i++)
             {
                 sum += i;
-                if (i.Equals(values[0]) || i.Equals(values[1]) || i.Equals(values[2]))
+                if (i == 250000000 || i == 500000000 || i == 750000000)
                     setProgressBar(ProgressBarOneThread);
             }
             setProgressBar(ProgressBarOneThread);
-            PrintResults(txtblock,Result,sum);
+            PrintResults(txtblock,Result);
             sum = 0;
         }
         private void multiThread()
@@ -80,7 +79,7 @@ namespace Parallel_WPF
             }
             for (byte i = 0; i < threads.Length; i++)
                 threads[i].Join();
-            PrintResults(txtblock_multi,Result_multi,sum);
+            PrintResults(txtblock_multi,Result_multi);
             sum = 0;
         }
         private void Button_Click(object sender, RoutedEventArgs e)
